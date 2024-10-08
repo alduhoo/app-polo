@@ -70,6 +70,7 @@ rm -rf ios/Pods
 rm -rf ios/Podfile.lock
 rm -rf ios/build
 (cd ios && pod install)
+```
 
 # For all platforms
 watchman watch-del .

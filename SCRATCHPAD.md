@@ -38,3 +38,9 @@ To add a gradient on the secondary exchange scroll area
 https://github.com/ArturKalach/react-native-external-keyboard#readme
 For better external keyboard support
 
+# SKCC ideas
+ - default to CW
+ - add sprint scoring
+ - fix clear not working
+ - reset state when qso is cleared
+ - move components to their own files
