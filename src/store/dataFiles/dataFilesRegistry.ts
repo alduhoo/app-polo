@@ -7,19 +7,26 @@
 
 import { removeDataFile } from './actions/dataFileFS'
 
-const registeredDataFiles = {}
+interface DataFileDefinition {
+  key: string
+  onUnload?: () => void
+}
 
-export function registerDataFile (definiton) {
+const registeredDataFiles: {
+  [index: string]: DataFileDefinition
+} = {}
+
+export function registerDataFile (definiton: DataFileDefinition) {
   registeredDataFiles[definiton.key] = definiton
 }
 
-export function unRegisterDataFile (definiton) {
-  registeredDataFiles[definiton.key]?.onUnload && registeredDataFiles[definiton.key]?.onUnload()
+export function unRegisterDataFile (definiton: DataFileDefinition) {
+  registeredDataFiles[definiton.key]?.onUnload && registeredDataFiles[definiton.key]?.onUnload?.()
   removeDataFile(definiton.key)
   delete registeredDataFiles[definiton.key]
 }
 
-export function getDataFileDefinition (key) {
+export function getDataFileDefinition (key: string) {
   return registeredDataFiles[key]
 }
 

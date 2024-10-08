@@ -54,7 +54,7 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 
-const reduxDevtoolsActionSanitizer = (action) => {
+const reduxDevtoolsActionSanitizer = (action: any) => {
   if (action.type === 'log/setCurrentLogInfo' && action?.payload?.yearQSOs) {
     return {
       ...action,
@@ -69,7 +69,7 @@ const reduxDevtoolsActionSanitizer = (action) => {
   }
 }
 
-const reduxDevtoolsStateSanitizer = (state) => {
+const reduxDevtoolsStateSanitizer = (state: any) => {
   return {
     ...state,
     log: {
@@ -104,3 +104,7 @@ export const testStore = configureStore({
 })
 
 export const persistor = persistStore(store)
+
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
+export type GetState = typeof store.getState

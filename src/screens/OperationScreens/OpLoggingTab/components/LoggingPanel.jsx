@@ -203,6 +203,10 @@ export default function LoggingPanel ({ style, operation, vfo, qsos, activeQSOs,
       updateQSO({ startOnMillis: value, _manualTime: true })
     } else if (fieldId === 'state') {
       updateQSO({ their: { state: value } })
+    } else if (fieldId === 'name') {
+      updateQSO({ their: { name: value } })
+    } else if (fieldId === 'skcc') {
+      updateQSO({ their: { skcc: value } })
     }
   }, [qso, updateQSO, dispatch])
 

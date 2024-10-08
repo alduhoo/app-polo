@@ -20,6 +20,7 @@ import WWBOTAExtension from './activities/wwbota/WWBOTAExtension'
 import ECAExtension from './activities/eca/ECAExtension'
 import ELAExtension from './activities/ela/ELAExtension'
 import SiOTAExtentsion from './activities/siota/SiOTAExtension'
+import SKCCExtension from './activities/skcc/SKCCExtension'
 
 import RadioCommands from './commands/RadioCommands'
 import TimeCommands from './commands/TimeCommands'
@@ -45,6 +46,7 @@ const loadExtensions = () => async (dispatch, getState) => {
   registerExtension(ECAExtension)
   registerExtension(ELAExtension)
   registerExtension(SiOTAExtentsion)
+  registerExtension(SKCCExtension)
 
   registerExtension(RadioCommands)
   registerExtension(TimeCommands)

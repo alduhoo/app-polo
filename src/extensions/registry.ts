@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 import { reportError } from '../distro'
 
 import { selectSettings } from '../store/settings'
+import { AppDispatch, GetState } from '../store'
 
 /*
  * # Extensions Registry
@@ -21,10 +22,33 @@ import { selectSettings } from '../store/settings'
  * It can register `hooks` to be called at specific points in the application lifecycle.
  *
  */
-const Extensions = {
+type ExtensionCategory = 'commands' | 'core' | 'data' | 'detail' | 'fieldOps' | 'locationBased' | 'other'
+type HookCategory = 'activity' | 'command' | 'screen' | 'setting' | 'opSetting' | `ref:${string}`
+export interface Extension {
+  key: string,
+  category: ExtensionCategory,
+  alwaysEnabled: boolean,
+  enabledByDefault: boolean,
+  priority?: number,
+  onActivation?: (obj: { registerHook: (hookCategory: HookCategory, props: any) => void}) => void,
+  onActivationDispatch?: (obj: { registerHook: (hookCategory: HookCategory, props: any) => void}) => (dispatch: AppDispatch) => Promise<void>
+  onDeactivation?: (_: {}) => void,
+  onDeactivationDispatch?: (_: {}) => (dispatch: AppDispatch) => Promise<void>
 }
 
-const Hooks = {
+interface Hook {
+  key: string,
+  hook: any,
+  priority?: number,
+  extension?: Extension,
+}
+
+const Extensions: {
+  [index: string]: Extension;
+} = {
+}
+
+const Hooks: Record<HookCategory, Hook[]> = {
   activity: [],
   command: [],
   screen: [],
@@ -34,11 +58,11 @@ const Hooks = {
 
 const VALID_HOOK_REGEX = /^(ref:\w+)/
 
-export function registerExtension (extension) {
+export function registerExtension (extension: Extension) {
   Extensions[extension.key] = extension
 }
 
-export function getExtension (key) {
+export function getExtension (key: string) {
   return Extensions[key]
 }
 
@@ -46,18 +70,18 @@ export function allExtensions () {
   return Object.values(Extensions)
 }
 
-function isExtensionEnabled (extension, settings) {
+function isExtensionEnabled (extension: Extension, settings: any): boolean {
   return (extension.alwaysEnabled || (settings[`extensions/${extension.key}`] ?? extension.enabledByDefault))
 }
 
-export function findHooks (hookCategory, { key } = {}) {
+export function findHooks (hookCategory: HookCategory, { key }: { key?: string } = {}) {
   let hooks = (Hooks[hookCategory] ?? []).map(h => h.hook)
   if (key) hooks = hooks.filter(h => h.key === key)
 
   return hooks
 }
 
-export function useFindHooks (hookCategory, { key } = {}) {
+export function useFindHooks (hookCategory: HookCategory, { key }: { key?: string } = {}) {
   const settings = useSelector(selectSettings)
 
   const activeExtensionHash = useMemo(() => {
@@ -68,11 +92,11 @@ export function useFindHooks (hookCategory, { key } = {}) {
   return useMemo(() => findHooks(hookCategory, { key }), [activeExtensionHash, hookCategory, key]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-export function findBestHook (hookCategory, options) {
+export function findBestHook (hookCategory: HookCategory, options: { key?: string }) {
   return findHooks(hookCategory, options)[0]
 }
 
-function registerHook (hookCategory, { extension, hook, priority }) {
+function registerHook (hookCategory: HookCategory, { extension, hook, priority }: { extension: Extension, hook: Hook, priority: number }) {
   if (!Hooks[hookCategory] && !VALID_HOOK_REGEX.test(hookCategory)) {
     reportError(`Invalid hook ${hookCategory} for extension ${extension.key}`)
     return false
@@ -87,11 +111,11 @@ function registerHook (hookCategory, { extension, hook, priority }) {
   Hooks[hookCategory] = newHooks
 }
 
-function unregisterAllHooks (hookCategory, { extension }) {
+function unregisterAllHooks (hookCategory: HookCategory, { extension }: { extension: Extension }) {
   Hooks[hookCategory] = Hooks[hookCategory].filter(h => h.key !== extension.key)
 }
 
-export async function activateEnabledExtensions (dispatch, getState) {
+export async function activateEnabledExtensions (dispatch: AppDispatch, getState: GetState) {
   const settings = selectSettings(getState()) || {}
   const extensions = allExtensions()
   for (const extension of extensions) {
@@ -101,7 +125,7 @@ export async function activateEnabledExtensions (dispatch, getState) {
   }
 }
 
-export const activateExtension = (extension) => async (dispatch) => {
+export const activateExtension = (extension: Extension) => async (dispatch: AppDispatch) => {
   if (extension.onActivation) {
     extension.onActivation({
       registerHook: (hookCategory, props) => { registerHook(hookCategory, { ...props, extension }) }
@@ -114,7 +138,7 @@ export const activateExtension = (extension) => async (dispatch) => {
   }
 }
 
-export const deactivateExtension = (extension) => async (dispatch) => {
+export const deactivateExtension = (extension: Extension) => async (dispatch: AppDispatch) => {
   if (extension.onDeactivation) {
     extension.onDeactivation({})
   }
